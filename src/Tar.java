@@ -1,10 +1,9 @@
-import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Tar {
     String filename;
+    List<File> fileList = new ArrayList<File>();
 
     // Constructor
     public Tar(String filename) {
@@ -14,6 +13,26 @@ public class Tar {
     // Torna un array amb la llista de fitxers que hi ha dins el TAR
     public String[] list() throws Exception {
         List<String> list = new ArrayList<String>();
+        List<File> fileList = this.fileList;
+
+        for (File file : fileList) {
+            String name = file.getName();
+            list.add(name);
+        }
+
+        String[] result = new String[list.size()];
+        list.toArray(result);
+        return result;
+    }
+
+    // Torna un array de bytes amb el contingut del fitxer que té per nom
+    // igual a l'String «name» que passem per paràmetre
+    public byte[] getBytes(String name) {
+        return null;
+    }
+
+    // Expandeix el fitxer TAR dins la memòria
+    public void expand() throws Exception {
         RandomAccessFile raf = new RandomAccessFile(this.filename, "r");
         StringBuilder sb = new StringBuilder();
         String fileName;
@@ -27,8 +46,10 @@ public class Tar {
                 sb.append(b - 48);
             }
             String fileSize = sb.toString();
+            if (fileSize.equals("-48-48-48-48-48-48-48-48-48-48-48")) break;
             sb.delete(0, sb.length());
-            long endOfFile = Integer.parseInt(fileSize, 8);
+            long size = Integer.parseInt(fileSize, 8);
+            long endOfFile = size;
             // Trobam el nombre multiple de 512 més proper del tamany
             // de la imatge per saber on termina el content de cada imatge.
             for (int i = 0; i < 512; i++) {
@@ -44,38 +65,20 @@ public class Tar {
             raf.seek(pointer);
             for (int i = 0; i < 100; i++) {
                 byte b = raf.readByte();
-                sb.append((char) b);
+                if (b != 0) {
+                    sb.append((char) b);
+                }
             }
             fileName = sb.toString();
             sb.delete(0, sb.length());
-            list.add(fileName);
             raf.seek(pointer);
-
             pointer += endOfFile;
+
+            File f = new File(fileName, size, endOfFile);
+            fileList.add(f);
         }
 
-        //raf.close();
-        //String[] listArray;
-        //list.toArray(listArray);
-        //return listArray;
-
-    }
-
-    // Torna un array de bytes amb el contingut del fitxer que té per nom
-    // igual a l'String «name» que passem per paràmetre
-    public byte[] getBytes(String name) {
-        return null;
-    }
-
-    // Expandeix el fitxer TAR dins la memòria
-    public void expand() throws Exception {
-        //228065
-        RandomAccessFile raf = new RandomAccessFile(this.filename, "r");
-        raf.seek(15360);
-        while (true) {
-            byte s = raf.readByte();
-            System.out.println(s);
-        }
+        raf.close();
     }
 }
 

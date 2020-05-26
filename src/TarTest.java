@@ -12,7 +12,7 @@ public class TarTest {
     @Test
     public void test1() throws Exception {
         Tar tar = new Tar("C:/Users/danie/Documents/archive2.tar");
-        //tar.expand();
+        tar.expand();
 
         assertArrayEquals(new String[]{
                 "aec8c99e699eac8ecc7d71986c931587.jpg",
