@@ -27,8 +27,41 @@ public class Tar {
 
     // Torna un array de bytes amb el contingut del fitxer que té per nom
     // igual a l'String «name» que passem per paràmetre
-    public byte[] getBytes(String name) {
-        return null;
+    public byte[] getBytes(String name) throws Exception {
+        RandomAccessFile rac = new RandomAccessFile(this.filename, "r");
+        List<Byte> list = new ArrayList<Byte>();
+        File file = null;
+        int counter = 0;
+        Iterator<File> it = this.fileList.iterator();
+        // Cercam l'arxiu a la llista
+        while(it.hasNext()){
+            if(it.next().name.equals(name)) {
+                file = it.next();
+                break;
+            }
+        }
+        // No s'ha trobat cap arxiu
+        if (file == null) {
+            return null;
+        }
+
+        rac.seek(file.endOfFile - file.size);
+        while (counter < file.size - 512) {
+            Byte b = rac.readByte();
+            list.add(b);
+            counter += 2;
+        }
+
+        // Passam la llista de Bytes[] a un array de bytes[]
+        Byte[] aux = (Byte[]) list.toArray();
+        byte[] result = new byte[list.size()];
+
+        int i = 0;
+        for (Byte b: aux) {
+            result[i++] = b;
+        }
+
+        return result;
     }
 
     // Expandeix el fitxer TAR dins la memòria
