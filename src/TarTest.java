@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
 public class TarTest {
     @Test
     public void test1() throws Exception {
-        Tar tar = new Tar("C:/Users/danie/Documents/archive2.tar");
+        Tar tar = new Tar("C:/Users/Dani/Documents/archive2.tar");
         tar.expand();
 
         assertArrayEquals(new String[]{

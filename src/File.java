@@ -1,7 +1,8 @@
 public class File {
-    String name;
-    long size;
-    long endOfFile;
+    private String fileName;
+    private 
+    private long size;
+    private long endOfFile;
 
     public File(String name, long size, long endOfFile){
         this.name = name;
