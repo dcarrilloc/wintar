@@ -23,7 +23,6 @@ public class File {
         this.content = content;
     }
 
-
     public String getFilename() {
         return filename;
     }
