@@ -1,7 +1,5 @@
-import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.awt.*;
+import java.io.*;
 import java.util.Scanner;
 
 public class Main {
@@ -19,7 +17,8 @@ public class Main {
             System.out.printf("%-5s %s %n", "4-", "Conéixer el propietari dels arxius.");
             System.out.printf("%-5s %s %n", "5-", "Conéixer el grup dels arxius.");
             System.out.printf("%-5s %s %n", "6-", "Extreure el fitxer a una destinació.");
-            System.out.printf("%-5s %s %n", "7-", "Sortir.");
+            System.out.printf("%-5s %s %n", "7-", "Obrir un arxiu contingut al tar.");
+            System.out.printf("%-5s %s %n", "8-", "Sortir.");
 
             int decisio = sc.nextInt();
             switch (decisio) {
@@ -67,6 +66,14 @@ public class Main {
                     }
                     break;
                 case 7:
+                    if (tar == null) {
+                        System.out.println("Per favor, assegura't de que primer s'ha carregat l'arxiu a memòria. " +
+                                "Per fer això, empra '1'");
+                    } else {
+                        run();
+                    }
+                    break;
+                case 8:
                     exit = true;
                     break;
             }
@@ -78,10 +85,9 @@ public class Main {
         Scanner sc = new Scanner(System.in);
         System.out.print("Introdueix la ruta del fitxer: ");
         String path = sc.next();
-        Tar t = new Tar(path);
-        t.expand();
-        System.out.println("Fitxer carregat amb éxit.");
-        return t;
+        Tar tar = new Tar(path);
+        tar.expand();
+        return tar;
     }
 
     // Llista els fitxers que hi ha dins el tar
@@ -97,7 +103,7 @@ public class Main {
     public static void size(){
         // Recorrem la llista de fitxers que té el nostre objecte Tar imprimint per pantalla el tamany de cada fitxer
         long totalsize = 0;
-        for (File f : tar.fileList) {
+        for (Files f : tar.filesList) {
             System.out.printf("%-50s : %s bytes %n", f.getFilename(), f.getFilesize());
             totalsize += f.getFilesize();
         }
@@ -107,7 +113,7 @@ public class Main {
     // Llista els propietaris dels fitxers que hi ha dins el tar
     public static void owner(){
         // Recorrem la llista de fitxers que té el nostre objecte Tar imprimint per pantalla el propietari de cada fitxer
-        for (File f : tar.fileList) {
+        for (Files f : tar.filesList) {
             System.out.printf("%-50s Propietari: %s %n", f.getFilename(), f.getFileowner());
         }
         System.out.printf("%n %n %n");
@@ -116,7 +122,7 @@ public class Main {
     // Llista els grups dels fitxers que hi ha dins el tar
     public static void group(){
         // Recorrem la llista de fitxers que té el nostre objecte Tar imprimint per pantalla el grup de cada fitxer
-        for (File f : tar.fileList) {
+        for (Files f : tar.filesList) {
             System.out.printf("%-50s Grup: %s %n", f.getFilename(), f.getFilegroup());
         }
         System.out.printf("%n %n %n");
@@ -126,15 +132,90 @@ public class Main {
     public static void extract(){
         try {
             Scanner sc = new Scanner(System.in);
-            System.out.print("Introdueix la ruta on vols descomprimir el fitxer (assegura't d'acabar amb '/'): ");
-            String path = sc.next();
-            for (File f : tar.fileList) {
+            System.out.printf("%-5s %s %n", "1-", "Descomprimir a una ubicació nova.");
+            System.out.printf("%-5s %s (%s) %n", "2-", "Descomprimir a una ubicació per defecte", tar.tarName);
+            int decisio = sc.nextInt();
+            String path = "";
+            if(decisio == 1) {
+                System.out.println("Introdueix la ubicació (Recorda acabar amb '/'): ");
+                path = sc.next();
+            } else if(decisio == 2) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < tar.tarName.length(); i++) {
+                    if(tar.tarName.charAt(i) != '.') {
+                        sb.append(tar.tarName.charAt(i));
+                    } else break;
+                }
+                File file = new File(sb.toString());
+                if (!file.exists()) {
+                    if (file.mkdir()) {
+                        System.out.println("Carpeta creada.");
+                    } else {
+                        System.out.println("Ja existeix una carpetaam aquest nom.");
+                    }
+                }
+                sb.append('/');
+                path = sb.toString();
+            }
+
+            // Recorrem els arxius i els anam descomprimint amb la ruta adequada
+            for (Files f : tar.filesList) {
                 OutputStream os = new FileOutputStream(path.concat(f.getFilename()));
                 DataOutputStream dos = new DataOutputStream(os);
                 dos.write(f.getContent());
+                dos.close();
+                os.close();
             }
+            System.out.println("Descompressió realitzada amb éxit.");
         } catch (Exception e){
-            System.out.println("Algo ha anat malament.");
+            System.out.println("Algo ha anat malament. Torna-ho a intentar un altre pic.");
+            e.printStackTrace();
+        }
+    }
+
+    // Obri un arxiu inclós al tar
+    public static void run() {
+        try{
+            Scanner sc =  new Scanner(System.in);
+            System.out.print("Introdueix el nom de l'arxiu que vols obrir: ");
+            String name = sc.nextLine();
+            String path = "";
+
+            // Descomprimim l'arxiu amb el mateix nombre
+            for (Files f : tar.filesList) {
+                if (name.equals(f.getFilename())) {
+                    StringBuilder sb = new StringBuilder();
+                    int counter = 0;
+                    for (int i = tar.tarName.length() - 1; i > 0; i--) {
+                        if (tar.tarName.charAt(i) == '/' || tar.tarName.charAt(i) == '\\'){
+                            break;
+                        } else {
+                            counter++;
+                        }
+                    }
+                    path = tar.tarName.substring(0, tar.tarName.length() - counter).concat(f.getFilename());
+
+                    OutputStream os = new FileOutputStream(path);
+                    DataOutputStream dos = new DataOutputStream(os);
+                    dos.write(f.getContent());
+                    dos.close();
+                    os.close();
+                    break;
+                }
+            }
+            if(path.equals("")) {
+                System.out.println("L'arxiu no s'ha trobat.");
+            }
+
+            // Executam el arxiu
+            File file = new File(path);
+            Desktop desktop = Desktop.getDesktop();
+            desktop.open(file);
+
+            // Eliminam l'arxiu
+            //file.delete();
+
+        } catch (IOException e){
             e.printStackTrace();
         }
     }
