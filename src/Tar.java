@@ -3,7 +3,7 @@ import java.util.*;
 
 public class Tar {
     String tarName;
-    List<Files> filesList = new ArrayList<Files>();
+    List<Document> documentList = new ArrayList<Document>();
 
     // Constructor
     public Tar(String tarName) {
@@ -12,9 +12,9 @@ public class Tar {
 
     // Torna un array amb la llista de fitxers que hi ha dins el TAR
     public String[] list(){
-        String[] list = new String[this.filesList.size()];
+        String[] list = new String[this.documentList.size()];
         int counter = 0;
-        for (Files f: this.filesList) {
+        for (Document f: this.documentList) {
             list[counter] = f.getFilename();
             counter++;
         }
@@ -25,7 +25,7 @@ public class Tar {
     // igual a l'String «name» que passem per paràmetre
     public byte[] getBytes(String name){
         byte[] content = null;
-        for (Files f:this.filesList) {
+        for (Document f:this.documentList) {
             if (f.getFilename().equals(name)) {
                 content = f.getContent();
                 break;
@@ -60,7 +60,7 @@ public class Tar {
                 byte[] content = dis.readNBytes(filesize);
 
                 // Cream l'objecte File amb tota la informació recopilada anteriorment
-                this.filesList.add(new Files(filename, filemode, fileowner, filegroup, filesize, fileLastModification, fileChecksum, linkIndicator, linkedFileName, content));
+                this.documentList.add(new Document(filename, filemode, fileowner, filegroup, filesize, fileLastModification, fileChecksum, linkIndicator, linkedFileName, content));
 
                 dis.skipBytes((int) (((Math.ceil(filesize / 512.0)) * 512) - filesize));
             }

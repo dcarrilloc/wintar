@@ -1,4 +1,4 @@
-public class Files {
+public class Document {
     private String filename;
     private int filemode;
     private String fileowner;
@@ -10,7 +10,7 @@ public class Files {
     private String linkedFileName;
     private byte[] content;
 
-    public Files(String filename, int filemode, String fileowner, String filegroup, long filesize, long fileLastModification, int fileChecksum, short fileLinkIndicator, String linkedFileName, byte[] content) {
+    public Document(String filename, int filemode, String fileowner, String filegroup, long filesize, long fileLastModification, int fileChecksum, short fileLinkIndicator, String linkedFileName, byte[] content) {
         this.filename = filename;
         this.filemode = filemode;
         this.fileowner = fileowner;

@@ -11,6 +11,7 @@ public class Main {
         boolean exit = false;
         System.out.println("Benvolgut. Quina operació vols fer?");
         do {
+            System.out.println("==================================================================");
             System.out.printf("%-5s %s %s %n", "1-", "Carregar un fitxer tar a memòria.", "(OBLIGATORI EL PRIMER PIC)");
             System.out.printf("%-5s %s %n", "2-", "Llistar els nombres dels arxius que hi ha dins el fitxer.");
             System.out.printf("%-5s %s %n", "3-", "Conéixer el tamany dels arxius.");
@@ -18,11 +19,17 @@ public class Main {
             System.out.printf("%-5s %s %n", "5-", "Conéixer el grup dels arxius.");
             System.out.printf("%-5s %s %n", "6-", "Extreure el fitxer a una destinació.");
             System.out.printf("%-5s %s %n", "7-", "Obrir un arxiu contingut al tar.");
-            System.out.printf("%-5s %s %n", "8-", "Sortir.");
+            System.out.printf("%-5s %s %n", "8-", "Edita un arxiu contingut al tar.");
+            System.out.printf("%-5s %s %n", "9-", "Imprimeix un arxiu contingut al tar. (No es vàlid per a tots els arxius).");
+            System.out.printf("%-5s %s %n", "10-", "Sortir.");
+            System.out.println("==================================================================");
 
             int decisio = sc.nextInt();
             switch (decisio) {
                 case 1:
+                    if (tar != null) {
+                        tar = null;
+                    }
                     tar = load();
                     break;
                 case 2:
@@ -70,12 +77,30 @@ public class Main {
                         System.out.println("Per favor, assegura't de que primer s'ha carregat l'arxiu a memòria. " +
                                 "Per fer això, empra '1'");
                     } else {
-                        run();
+                        run(0);
                     }
                     break;
                 case 8:
+                    if (tar == null) {
+                        System.out.println("Per favor, assegura't de que primer s'ha carregat l'arxiu a memòria. " +
+                                "Per fer això, empra '1'");
+                    } else {
+                        run(1);
+                    }
+                    break;
+                case 9:
+                    if (tar == null) {
+                        System.out.println("Per favor, assegura't de que primer s'ha carregat l'arxiu a memòria. " +
+                                "Per fer això, empra '1'");
+                    } else {
+                        run(2);
+                    }
+                    break;
+                case 10:
                     exit = true;
                     break;
+                default:
+                    System.out.println("Ha hagut algun error.");
             }
         } while (!exit);
     }
@@ -103,7 +128,7 @@ public class Main {
     public static void size(){
         // Recorrem la llista de fitxers que té el nostre objecte Tar imprimint per pantalla el tamany de cada fitxer
         long totalsize = 0;
-        for (Files f : tar.filesList) {
+        for (Document f : tar.documentList) {
             System.out.printf("%-50s : %s bytes %n", f.getFilename(), f.getFilesize());
             totalsize += f.getFilesize();
         }
@@ -113,7 +138,7 @@ public class Main {
     // Llista els propietaris dels fitxers que hi ha dins el tar
     public static void owner(){
         // Recorrem la llista de fitxers que té el nostre objecte Tar imprimint per pantalla el propietari de cada fitxer
-        for (Files f : tar.filesList) {
+        for (Document f : tar.documentList) {
             System.out.printf("%-50s Propietari: %s %n", f.getFilename(), f.getFileowner());
         }
         System.out.printf("%n %n %n");
@@ -122,7 +147,7 @@ public class Main {
     // Llista els grups dels fitxers que hi ha dins el tar
     public static void group(){
         // Recorrem la llista de fitxers que té el nostre objecte Tar imprimint per pantalla el grup de cada fitxer
-        for (Files f : tar.filesList) {
+        for (Document f : tar.documentList) {
             System.out.printf("%-50s Grup: %s %n", f.getFilename(), f.getFilegroup());
         }
         System.out.printf("%n %n %n");
@@ -159,7 +184,7 @@ public class Main {
             }
 
             // Recorrem els arxius i els anam descomprimint amb la ruta adequada
-            for (Files f : tar.filesList) {
+            for (Document f : tar.documentList) {
                 OutputStream os = new FileOutputStream(path.concat(f.getFilename()));
                 DataOutputStream dos = new DataOutputStream(os);
                 dos.write(f.getContent());
@@ -174,7 +199,7 @@ public class Main {
     }
 
     // Obri un arxiu inclós al tar
-    public static void run() {
+    public static void run(int mode) {
         try{
             Scanner sc =  new Scanner(System.in);
             System.out.print("Introdueix el nom de l'arxiu que vols obrir: ");
@@ -182,7 +207,7 @@ public class Main {
             String path = "";
 
             // Descomprimim l'arxiu amb el mateix nombre
-            for (Files f : tar.filesList) {
+            for (Document f : tar.documentList) {
                 if (name.equals(f.getFilename())) {
                     StringBuilder sb = new StringBuilder();
                     int counter = 0;
@@ -210,7 +235,16 @@ public class Main {
             // Executam el arxiu
             File file = new File(path);
             Desktop desktop = Desktop.getDesktop();
-            desktop.open(file);
+            if(mode == 0) {
+                // Editam l'arxiu amb l'aplicació predeterminada per el sistema operatiu.
+                desktop.open(file);
+            } else if(mode == 1) {
+                // Obrim l'arxiu amb l'aplicació predeterminada per el sistema operatiu.
+                desktop.edit(file);
+            } else if (mode == 2) {
+                // Imprimim l'arxiu.
+                desktop.print(file);
+            }
 
             // Eliminam l'arxiu
             //file.delete();
