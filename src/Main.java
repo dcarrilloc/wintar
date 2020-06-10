@@ -165,12 +165,14 @@ public class Main {
                 System.out.println("Introdueix la ubicació (Recorda acabar amb '/'): ");
                 path = sc.next();
             } else if(decisio == 2) {
+                // Agafam la ruta del nom del Tar excepte la extensió
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < tar.tarName.length(); i++) {
                     if(tar.tarName.charAt(i) != '.') {
                         sb.append(tar.tarName.charAt(i));
                     } else break;
                 }
+                // Cream la carpeta on es descomprimiran els arxius
                 File file = new File(sb.toString());
                 if (!file.exists()) {
                     if (file.mkdir()) {
@@ -183,7 +185,7 @@ public class Main {
                 path = sb.toString();
             }
 
-            // Recorrem els arxius i els anam descomprimint amb la ruta adequada
+            // Recorrem els arxius i els anam descomprimint en la ruta adequada
             for (Document f : tar.documentList) {
                 OutputStream os = new FileOutputStream(path.concat(f.getFilename()));
                 DataOutputStream dos = new DataOutputStream(os);
@@ -209,7 +211,6 @@ public class Main {
             // Descomprimim l'arxiu amb el mateix nombre
             for (Document f : tar.documentList) {
                 if (name.equals(f.getFilename())) {
-                    StringBuilder sb = new StringBuilder();
                     int counter = 0;
                     for (int i = tar.tarName.length() - 1; i > 0; i--) {
                         if (tar.tarName.charAt(i) == '/' || tar.tarName.charAt(i) == '\\'){
@@ -232,23 +233,19 @@ public class Main {
                 System.out.println("L'arxiu no s'ha trobat.");
             }
 
-            // Executam el arxiu
+            // Executam l'arxiu
             File file = new File(path);
             Desktop desktop = Desktop.getDesktop();
             if(mode == 0) {
-                // Editam l'arxiu amb l'aplicació predeterminada per el sistema operatiu.
+                // Obrim l'arxiu amb l'aplicació predeterminada per el sistema operatiu.
                 desktop.open(file);
             } else if(mode == 1) {
-                // Obrim l'arxiu amb l'aplicació predeterminada per el sistema operatiu.
+                // Editam l'arxiu amb l'aplicació predeterminada per el sistema operatiu.
                 desktop.edit(file);
             } else if (mode == 2) {
                 // Imprimim l'arxiu.
                 desktop.print(file);
             }
-
-            // Eliminam l'arxiu
-            //file.delete();
-
         } catch (IOException e){
             e.printStackTrace();
         }
